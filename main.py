@@ -6,6 +6,7 @@ main entry of the project
 import atexit
 import time
 import multiprocessing
+import threading
 
 import cv2
 import module_wrappers
@@ -34,13 +35,15 @@ def get_frames(num_of_cameras=0, queues=[]):
     all cameras
     '''
     assert num_of_cameras == len(queues), "need to have more/less queues"
-
+    cv2.namedWindow("image")
     for i in range(num_of_cameras):
         _register_camera(i)
 
     while(True):
         for camera, queue in zip(_CAMERAS, queues):
             ret, frame = camera.read()
+            cv2.imshow("image", frame)
+            cv2.waitKey(1)
             if ret: queue.put(frame)
         # time.sleep(0.2)
 
@@ -53,8 +56,11 @@ def main_runner():
     capture_to_detector_queue   = smart_manager.Queue()
     detector_to_output_queue    = smart_manager.Queue()
 
-    detector_in_out = multiprocessing.Process(target=module_wrappers.detector_wrapper, args=(capture_to_detector_queue, detector_to_output_queue))
-    frame_out = multiprocessing.Process(target=module_wrappers.video_export_wrapper,  args=(detector_to_output_queue,))
+    # detector_in_out = multiprocessing.Process(target=module_wrappers.detector_wrapper, args=(capture_to_detector_queue, detector_to_output_queue))
+    # frame_out = multiprocessing.Process(target=module_wrappers.video_export_wrapper,  args=(detector_to_output_queue,))
+
+    detector_in_out = threading.Thread(target=module_wrappers.detector_wrapper, args=(capture_to_detector_queue, detector_to_output_queue))
+    frame_out = threading.Thread(target=module_wrappers.video_export_wrapper,  args=(detector_to_output_queue,))
 
     try:
         detector_in_out.start()

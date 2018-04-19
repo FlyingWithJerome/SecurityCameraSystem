@@ -11,25 +11,29 @@ import numpy as np
 import cv2
 # import video_capture
 
-from frame_tag import Tag
+# from frame_tag import Tag
 
 class Detector(object):
 
-    def __init__(self, queue_capture, queue_output, method="Haar"):
+    def __init__(self, camera_serial=0, method="Haar"):
 
         # print("detector initializing")
 
         if method == "Haar":
-            self.__cascade = cv2.CascadeClassifier('haarcascade_upperbody.xml')
+            # self.__cascade = cv2.CascadeClassifier('haarcascade_upperbody.xml')
+            self.__cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
+
         elif method == "HOG":
             self.__cascade = cv2.HOGDescriptor()
             self.__cascade.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
+        self.__camera = cv2.VideoCapture(camera_serial)
+
         self.__method = method
         self.__output_buffer  = None
         self.__size_buffer    = []
-        self.__queue_in       = queue_capture
-        self.__queue_out      = queue_output
+        # self.__queue_in       = queue_capture
+        # self.__queue_out      = queue_output
 
         self.__event_level    = 1
         self.__frame_step     = 5
@@ -43,25 +47,24 @@ class Detector(object):
         skip_iteration = 0
         while(True):
             try:
-                frame = self.__queue_in.get_nowait()
+                ret, frame = self.__camera.read()
+                if not ret:
+                    continue
                 self.__detect_face(frame)
                 if skip_iteration % 30 == 0:
                     self.__check_event_logic()
                 print("Event level: %d"%self.__event_level)
 
-                if self.__event_level == 2:
-                    self.__queue_out.put(("lo-res picture", frame))
+                # if self.__event_level == 2:
+                #     self.__queue_out.put(("lo-res picture", frame))
 
-                elif self.__event_level == 3:
-                    self.__queue_out.put(("hi-res picture", frame))
+                # elif self.__event_level == 3:
+                #     self.__queue_out.put(("hi-res picture", frame))
 
-                elif self.__event_level == 4:
-                    self.__queue_out.put(("video", frame))
+                # elif self.__event_level == 4:
+                #     self.__queue_out.put(("video", frame))
 
                 skip_iteration += 1
-
-            except queue.Empty:
-                pass
 
             except (EOFError, IOError, KeyboardInterrupt):
                 break
@@ -95,20 +98,25 @@ class Detector(object):
         matches
         '''
         faces = self.__cascade.detectMultiScale(frame)
-        # if self.__method == "Haar":
+        (x, y, w, h) = (0, 0, 0, 0)
+
         if len(faces) > 0:
             if self.__method == "Haar":
                 (x, y, w, h)  = faces[0]
                 self.__append_to_size_buffer(w*2 + h*2)
-                return
+                cv2.imshow("frame", frame)
+                cv2.waitKey(1)
 
             elif self.__method == "HOG":
                 if len(faces[0]) > 0 and len(faces[0][0]) > 0: 
                     (x, y, w, h)  = faces[0][0]
-                    self.__append_to_size_buffer(w*2 + h*2)
-                    return
+
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        cv2.imshow("frame", frame)
+        cv2.waitKey(1)        
         
-        self.__append_to_size_buffer(0)
+        self.__append_to_size_buffer(w*2 + h*2)
+
 
     def __check_event_logic(self):
         '''
@@ -126,5 +134,15 @@ class Detector(object):
         elif self.__event_level == 1:
             if any(i > 0 for i in self.__size_buffer):
                 self.__event_level += 1
+
+    def __del__(self):
+        cv2.destroyAllWindows()
+        self.__camera.release()
+
+
+if __name__ == "__main__":
+    f = Detector()
+    f.start()
+
 
         
