@@ -11,13 +11,13 @@ import numpy as np
 import cv2
 # import video_capture
 
-from utils.tag import Tag
+from frame_tag import Tag
 
 class Detector(object):
 
-    def __init__(self, queue_capture, queue_output, method="HOG"):
+    def __init__(self, queue_capture, queue_output, method="Haar"):
 
-        print("detector initializing")
+        # print("detector initializing")
 
         if method == "Haar":
             self.__cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
@@ -48,7 +48,16 @@ class Detector(object):
                 if skip_iteration % 30 == 0:
                     self.__check_event_logic()
                 print("Event level: %d"%self.__event_level)
-                self.__queue_out.put(frame)
+
+                if self.__event_level == 2:
+                    self.__queue_out.put(("lo-res picture", frame))
+
+                elif self.__event_level == 3:
+                    self.__queue_out.put(("hi-res picture", frame))
+
+                elif self.__event_level == 4:
+                    self.__queue_out.put(("video", frame))
+
                 skip_iteration += 1
 
             except queue.Empty:
@@ -94,7 +103,7 @@ class Detector(object):
                 return
 
             elif self.__method == "HOG":
-                if faces[0] and faces[0][0]: 
+                if len(faces[0]) > 0 and len(faces[0][0]) > 0: 
                     (x, y, w, h)  = faces[0][0]
                     self.__append_to_size_buffer(w*2 + h*2)
                     return

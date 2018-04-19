@@ -8,7 +8,7 @@ for multiprocessing jobs
 import cv2
 
 # from video_handling import video_capture
-from video_handling import video_output
+import video_output
 
 import face_detection
 
