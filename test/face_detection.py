@@ -15,17 +15,22 @@ import cv2
 
 class Detector(object):
 
-    def __init__(self, camera_serial=0, method="Haar", video_format="MJPG"):
+    def __init__(self, camera_serial=0, frame_skip=7, method="Haar_upperbody", video_format="MJPG"):
 
         # print("detector initializing")
 
-        if method == "Haar":
-            # self.__cascade = cv2.CascadeClassifier('haarcascade_upperbody.xml')
+        if method == "Haar_upperbody":
+            self.__cascade = cv2.CascadeClassifier('haarcascade_upperbody.xml')
+
+        elif method == "Haar_frontalface":
             self.__cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
 
         elif method == "HOG":
             self.__cascade = cv2.HOGDescriptor()
             self.__cascade.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+
+        else:
+            raise ValueError("need a valid detector name")
 
         self.__camera  = cv2.VideoCapture(camera_serial)
         self.__writer = cv2.VideoWriter("out.avi", cv2.VideoWriter_fourcc(*video_format), 24, (1280, 720))
@@ -37,22 +42,29 @@ class Detector(object):
 
         self.__event_level    = 1
         self.__frame_step     = 5
+        self.__frame_skip     = frame_skip
 
     def main_loop(self):
         self.__get_frame_block()
 
     def __get_frame_block(self):
         skip_iteration = 0
+        frame_skip = self.__frame_skip
         while(True):
             try:
                 ret, frame = self.__camera.read()
                 if not ret:
                     continue
-                self.__detect_face(frame)
+                
+                if skip_iteration % frame_skip == 0:
+                    frame = self.__detect_face(frame)
 
-                if skip_iteration % 30 == 0:
+                    # if skip_iteration % 30 == 0:
                     self.__check_event_logic()
                 print("Event level: %d"%self.__event_level)
+                print(self.__size_buffer)
+                cv2.imshow("frame", frame)
+                cv2.waitKey(1)
 
                 if self.__event_level == 2:
                     self.__output_media(frame, "lo-res pic")
@@ -73,7 +85,7 @@ class Detector(object):
         append to the size buffer, remove the earliest
         one if it reaches the size limit
         '''
-        if len(self.__size_buffer) == 75:
+        if len(self.__size_buffer) == 10:
             del self.__size_buffer[0]
 
         self.__size_buffer.append(size)
@@ -100,7 +112,7 @@ class Detector(object):
         (x, y, w, h) = (0, 0, 0, 0)
 
         if len(faces) > 0:
-            if self.__method == "Haar":
+            if self.__method.startswith("Haar"):
                 (x, y, w, h)  = faces[0]
                 self.__append_to_size_buffer(w*2 + h*2)
 
@@ -108,14 +120,14 @@ class Detector(object):
                 if len(faces[0]) > 0 and len(faces[0][0]) > 0: 
                     (x, y, w, h)  = faces[0][0]
 
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-        cv2.imshow("frame", frame)
-        cv2.waitKey(1)        
-        
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)        
         self.__append_to_size_buffer(w*2 + h*2)
+
+        return frame
 
     
     def __output_media(self, frame, option="lo-res pic"):
+        
         if option == "lo-res pic":
             cv2.imwrite("low resolution picture.jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
         elif option == "hi-res pic":
@@ -131,7 +143,7 @@ class Detector(object):
         logic designed
         '''
         if 2 <= self.__event_level < 4:
-            if len(self.__size_buffer) == 75:
+            if len(self.__size_buffer) == 10:
                 if self.__is_approaching_for_long(True):
                     self.__event_level += 1
 
@@ -149,7 +161,7 @@ class Detector(object):
 
 
 if __name__ == "__main__":
-    f = Detector()
+    f = Detector(method="Haar_frontalface")
     f.main_loop()
 
 
