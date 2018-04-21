@@ -15,7 +15,7 @@ import cv2
 
 class Detector(object):
 
-    def __init__(self, camera_serial=0, method="Haar"):
+    def __init__(self, camera_serial=0, method="Haar", video_format="MJPG"):
 
         # print("detector initializing")
 
@@ -27,8 +27,8 @@ class Detector(object):
             self.__cascade = cv2.HOGDescriptor()
             self.__cascade.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
-        self.__camera = cv2.VideoCapture(camera_serial)
-
+        self.__camera  = cv2.VideoCapture(camera_serial)
+        self.__writer = cv2.VideoWriter("out.avi", cv2.VideoWriter_fourcc(*video_format), 24, (1280, 720))
         self.__method = method
         self.__output_buffer  = None
         self.__size_buffer    = []
@@ -38,9 +38,7 @@ class Detector(object):
         self.__event_level    = 1
         self.__frame_step     = 5
 
-        print("detector initialized")
-
-    def start(self):
+    def main_loop(self):
         self.__get_frame_block()
 
     def __get_frame_block(self):
@@ -51,18 +49,19 @@ class Detector(object):
                 if not ret:
                     continue
                 self.__detect_face(frame)
+
                 if skip_iteration % 30 == 0:
                     self.__check_event_logic()
                 print("Event level: %d"%self.__event_level)
 
-                # if self.__event_level == 2:
-                #     self.__queue_out.put(("lo-res picture", frame))
+                if self.__event_level == 2:
+                    self.__output_media(frame, "lo-res pic")
 
-                # elif self.__event_level == 3:
-                #     self.__queue_out.put(("hi-res picture", frame))
+                elif self.__event_level == 3:
+                    self.__output_media(frame, "hi-res pic")
 
-                # elif self.__event_level == 4:
-                #     self.__queue_out.put(("video", frame))
+                elif self.__event_level == 4:
+                    self.__output_media(frame, "video")
 
                 skip_iteration += 1
 
@@ -104,8 +103,6 @@ class Detector(object):
             if self.__method == "Haar":
                 (x, y, w, h)  = faces[0]
                 self.__append_to_size_buffer(w*2 + h*2)
-                cv2.imshow("frame", frame)
-                cv2.waitKey(1)
 
             elif self.__method == "HOG":
                 if len(faces[0]) > 0 and len(faces[0][0]) > 0: 
@@ -116,6 +113,16 @@ class Detector(object):
         cv2.waitKey(1)        
         
         self.__append_to_size_buffer(w*2 + h*2)
+
+    
+    def __output_media(self, frame, option="lo-res pic"):
+        if option == "lo-res pic":
+            cv2.imwrite("low resolution picture.jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+        elif option == "hi-res pic":
+            cv2.imwrite("hi resolution picture.jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+
+        elif option == "video":
+            self.__writer.write(frame)
 
 
     def __check_event_logic(self):
@@ -138,11 +145,12 @@ class Detector(object):
     def __del__(self):
         cv2.destroyAllWindows()
         self.__camera.release()
+        self.__writer.release()
 
 
 if __name__ == "__main__":
     f = Detector()
-    f.start()
+    f.main_loop()
 
 
         
