@@ -15,7 +15,7 @@ import cv2
 
 class Detector(object):
 
-    def __init__(self, camera_serial=0, frame_skip=7, method="Haar_upperbody", video_format="MJPG"):
+    def __init__(self, camera_serial=0, frame_skip=7, method="Haar_upperbody", video_format="MJPG", video_handler=None):
 
         # print("detector initializing")
 
@@ -32,8 +32,11 @@ class Detector(object):
         else:
             raise ValueError("need a valid detector name")
 
-        self.__camera  = cv2.VideoCapture(camera_serial)
-        self.__writer = cv2.VideoWriter("out.avi", cv2.VideoWriter_fourcc(*video_format), 24, (1280, 720))
+        if video_handler is None:
+            self.__camera = cv2.VideoCapture(camera_serial)
+        else:
+            self.__camera = video_handler
+        self.__writer = cv2.VideoWriter("out.avi", cv2.VideoWriter_fourcc(*video_format), 12, (1280, 720))
         self.__method = method
         self.__output_buffer  = None
         self.__size_buffer    = []
@@ -45,40 +48,44 @@ class Detector(object):
         self.__frame_skip     = frame_skip
 
     def main_loop(self):
-        self.__get_frame_block()
-
-    def __get_frame_block(self):
-        skip_iteration = 0
-        frame_skip = self.__frame_skip
+        order = 0
         while(True):
-            try:
-                ret, frame = self.__camera.read()
-                if not ret:
-                    continue
-                
-                if skip_iteration % frame_skip == 0:
-                    frame = self.__detect_face(frame)
-
-                    # if skip_iteration % 30 == 0:
-                    self.__check_event_logic()
-                print("Event level: %d"%self.__event_level)
-                print(self.__size_buffer)
+            if order % self.__frame_skip == 0:
+                frame = self.get_frame_single(skip=False)
+            else:
+                frame = self.get_frame_single(skip=True)
+            
+            order += 1
+            if not (frame is None):
                 cv2.imshow("frame", frame)
                 cv2.waitKey(1)
 
-                if self.__event_level == 2:
-                    self.__output_media(frame, "lo-res pic")
+    def get_frame_single(self, skip=False):
+        try:
+            ret, frame = self.__camera.read()
+            if not ret:
+                return None
+            
+            if not skip:
+                frame = self.__detect_face(frame)
+                # if skip_iteration % 30 == 0:
+                self.__check_event_logic()
+            print("Event level: %d"%self.__event_level)
+            # print(self.__size_buffer)
 
-                elif self.__event_level == 3:
-                    self.__output_media(frame, "hi-res pic")
+            if self.__event_level == 2:
+                self.__output_media(frame, "lo-res pic")
 
-                elif self.__event_level == 4:
-                    self.__output_media(frame, "video")
+            elif self.__event_level == 3:
+                self.__output_media(frame, "hi-res pic")
 
-                skip_iteration += 1
+            elif self.__event_level == 4:
+                self.__output_media(frame, "video")
 
-            except (EOFError, IOError, KeyboardInterrupt):
-                break
+            return frame
+
+        except (EOFError, IOError, KeyboardInterrupt):
+            return None
 
     def __append_to_size_buffer(self, size):
         '''
