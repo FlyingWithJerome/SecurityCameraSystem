@@ -2,15 +2,17 @@
 GUI_Interface.py
 '''
 
+import cProfile
+import threading
+import time
+from datetime import datetime
+
 from PIL import Image
 from PIL import ImageTk
 import Tkinter as tk
-import threading
 import imutils
 import cv2
-import time
 
-from datetime import datetime
 
 from face_detection import Detector
 
@@ -18,11 +20,11 @@ class Interface(object):
 
     def __init__(self, camera_num=0):
         self.__gui_root = tk.Tk()
-        self.__btn = tk.Button(self.__gui_root, text="Exit!", command=self.__destroy)
-        self.__btn.pack(side="bottom", fill="both", expand="yes", padx=10, pady=10)
+        self.__btn = tk.Button(self.__gui_root, text="Exit", command=self.__destroy)
+        self.__btn.pack(side="bottom", fill="both", expand="yes", padx=5, pady=5)
         self.__process_window = tk.Text()
         self.__process_window.pack(side="right")
-        self.__process_window.insert(tk.END, "Initializing Camera {}...".format(camera_num))
+        self.__process_window.insert(tk.END, "Initializing Camera {}...\n".format(camera_num))
         self.__gui_root.wm_title("Test")
 
         self.__panel = None
@@ -36,7 +38,9 @@ class Interface(object):
         self.__event_str = None
         self.__event_changed = False
 
-        self.__detector = Detector(method="Haar_upperbody", video_handler=self.__test_video)
+        self.__detector = Detector(method="Haar_frontalface", video_handler=self.__test_video)
+
+        self.__event_lock = threading.Lock()
 
         self.__frame_executor = threading.Thread(target=self.__get_frame)
         self.__frame_executor.setDaemon(True)
@@ -45,7 +49,7 @@ class Interface(object):
         self.__event_lvl_executor = threading.Thread(target=self.__get_event_level)
         self.__event_lvl_executor.setDaemon(True)
         self.__event_lvl_executor.start()
-        # self.__executor.join()
+
 
     def __destroy(self):
         del self.__detector
@@ -82,12 +86,14 @@ class Interface(object):
                 time_now = str(datetime.now())[:-7]
                 verb = "raised to" if event_lvl > self.__event_level else "lowered to"
 
-                fmt = "[{:}] Camera {} Event {} {} {}\n".format(\
-                time_now, self.__camera_num, self.__event_level, verb, event_lvl
+                fmt = "[Camera {}] <{}> Event {} {} {}\n".format(\
+                self.__camera_num, time_now, self.__event_level, verb, event_lvl
                 )
                 self.__event_level = event_lvl
+                self.__event_lock.acquire()
                 self.__event_str = fmt
                 self.__event_changed = True
+                self.__event_lock.release()
 
     
     def run(self):
@@ -108,19 +114,18 @@ class Interface(object):
                     self.__panel.configure(image=im)
                     self.__panel.image = im
                 
+                self.__event_lock.acquire()
                 if self.__event_changed:
                     self.__process_window.insert(tk.END, self.__event_str)
                     self.__event_changed = False
+                self.__event_lock.release()
+
                 self.__gui_root.update()
 
     def __del__(self):
-        print("released")
         self.__test_video.release()
-        # self.__destroy
         self.__gui_root.quit()
 
 if __name__ == "__main__":
     i = Interface()
-    i.run()
-    # except KeyboardInterrupt:
-    exit(0)
+    cProfile.run("i.run()")

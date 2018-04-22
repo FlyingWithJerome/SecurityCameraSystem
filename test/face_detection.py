@@ -153,7 +153,7 @@ class Detector(object):
         logic designed
         '''
         if 2 <= self.__event_level < 4:
-            if len(self.__size_buffer) == 10:
+            if len(self.__size_buffer) == 15:
                 if self.__is_approaching_for_long(True):
                     self.__event_level += 1
 
