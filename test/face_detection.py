@@ -60,6 +60,9 @@ class Detector(object):
                 cv2.imshow("frame", frame)
                 cv2.waitKey(1)
 
+    def get_event_level(self):
+        return self.__event_level
+
     def get_frame_single(self, skip=False):
         try:
             ret, frame = self.__camera.read()
@@ -70,7 +73,7 @@ class Detector(object):
                 frame = self.__detect_face(frame)
                 # if skip_iteration % 30 == 0:
                 self.__check_event_logic()
-            print("Event level: %d"%self.__event_level)
+            # print("Event level: %d"%self.__event_level)
             # print(self.__size_buffer)
 
             if self.__event_level == 2:
@@ -162,7 +165,6 @@ class Detector(object):
                 self.__event_level += 1
 
     def __del__(self):
-        cv2.destroyAllWindows()
         self.__camera.release()
         self.__writer.release()
 
