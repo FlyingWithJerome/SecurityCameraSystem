@@ -44,7 +44,7 @@ class Detector(object):
         # self.__queue_out      = queue_output
 
         self.__event_level    = 1
-        self.__frame_step     = 5
+        # self.__frame_step     = 5
         self.__frame_skip     = frame_skip
 
     def main_loop(self):
@@ -71,9 +71,7 @@ class Detector(object):
             
             if not skip:
                 frame = self.__detect_face(frame)
-                # if skip_iteration % 30 == 0:
                 self.__check_event_logic()
-            # print("Event level: %d"%self.__event_level)
             # print(self.__size_buffer)
 
             if self.__event_level == 2:
@@ -108,10 +106,15 @@ class Detector(object):
         is_approaching: check it is approaching if true
         check it is leaving if false
         '''
-        size_buffer_copy = self.__size_buffer[::self.__frame_step]
+        if not is_approaching and\
+            all(i == 0 for i in self.__size_buffer[:-5]):
+            return True
+            
+        size_buffer_copy = list()
+        size_buffer_copy[:] = self.__size_buffer[:]
         size_buffer_copy.sort(reverse=not is_approaching)
 
-        return size_buffer_copy == self.__size_buffer[::self.__frame_step]
+        return size_buffer_copy == self.__size_buffer
 
     def __detect_face(self, frame):
         '''
@@ -153,7 +156,7 @@ class Detector(object):
         logic designed
         '''
         if 2 <= self.__event_level < 4:
-            if len(self.__size_buffer) == 15:
+            if len(self.__size_buffer) == 10:
                 if self.__is_approaching_for_long(True):
                     self.__event_level += 1
 

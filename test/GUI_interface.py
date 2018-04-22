@@ -20,12 +20,23 @@ class Interface(object):
 
     def __init__(self, camera_num=0):
         self.__gui_root = tk.Tk()
-        self.__btn = tk.Button(self.__gui_root, text="Exit", command=self.__destroy)
-        self.__btn.pack(side="bottom", fill="both", expand="yes", padx=5, pady=5)
+
+        self.__btn_frame = tk.Frame()
+        self.__btn_frame.pack(side="bottom")
+
+        self.__exit_btn = tk.Button(self.__btn_frame, text="Exit", command=self.__destroy)
+        self.__exit_btn.pack(side="left", fill="both", expand="yes", padx=5, pady=5)
+
+        self.__start_btn = tk.Button(self.__btn_frame, text="Start", command=self.__start)
+        self.__start_btn.pack(side="left", fill="both", expand="yes", padx=5, pady=5)
+
+        self.__pause_btn = tk.Button(self.__btn_frame, text="Pause", command=self.__pause)
+        self.__pause_btn.pack(side="left", fill="both", expand="yes", padx=5, pady=5)
+
         self.__process_window = tk.Text()
         self.__process_window.pack(side="right")
         self.__process_window.insert(tk.END, "Initializing Camera {}...\n".format(camera_num))
-        self.__gui_root.wm_title("Test")
+        self.__gui_root.wm_title("Camera {:d}".format(camera_num))
 
         self.__panel = None
         self.__destroyed = False
@@ -50,6 +61,12 @@ class Interface(object):
         self.__event_lvl_executor.setDaemon(True)
         self.__event_lvl_executor.start()
 
+    
+    def __start(self):
+        self.__isrunning = True
+
+    def __pause(self):
+        self.__isrunning = False
 
     def __destroy(self):
         del self.__detector
@@ -69,6 +86,8 @@ class Interface(object):
                     self.__image = self.__detector.get_frame_single(skip=False)
                 else:
                     self.__image = self.__detector.get_frame_single(skip=True)
+
+                order += 1
                 # ret, frame = self.__test_video.read()
                 # if ret:
                 #     self.__image = frame
@@ -89,8 +108,8 @@ class Interface(object):
                 fmt = "[Camera {}] <{}> Event {} {} {}\n".format(\
                 self.__camera_num, time_now, self.__event_level, verb, event_lvl
                 )
-                self.__event_level = event_lvl
                 self.__event_lock.acquire()
+                self.__event_level = event_lvl
                 self.__event_str = fmt
                 self.__event_changed = True
                 self.__event_lock.release()
