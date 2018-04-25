@@ -31,8 +31,6 @@ class TextInterface(object):
         self.__event_level = 1
         self.__image = None
 
-        print("text:", on_pi)
-
         self.__detector = Detector(method=detect_method, video_handler=self.__test_video, on_pi=on_pi)
         print("Initialization Finished")
 

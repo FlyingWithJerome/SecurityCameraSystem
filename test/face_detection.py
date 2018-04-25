@@ -37,7 +37,6 @@ class Detector(object):
         else:
             self.__camera = video_handler
 
-        print("detector:", on_pi)
         if on_pi:
             self.__writer = cv2.VideoWriter("out.avi", cv2.cv.CV_FOURCC(*video_format), 12, (1280, 720))
         else:
@@ -160,6 +159,7 @@ class Detector(object):
         change the event level based on the
         logic designed
         '''
+        print(self.__size_buffer)
         if 2 <= self.__event_level < 4:
             if len(self.__size_buffer) == 10:
                 if self.__is_approaching_for_long(True):
