@@ -36,7 +36,7 @@ def parse_arguments():
     [camera_num]  = args["number of cameras"]
     detect_method = detection_map[args["detection method"]]
     event_logic   = args["event logic"]
-    is_onpi       = True if args["running on Pi"].lower() == "pi" else False
+    is_onpi       = args["running on Pi"].lower() == "pi"
 
     return [
         {
