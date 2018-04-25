@@ -4,6 +4,7 @@ main.py
 The entry point of the program
 '''
 
+import threading
 import multiprocessing
 import sys
 
@@ -23,9 +24,9 @@ def launch_camera_instances(camera_num=0, interface_opt="text", is_pi=False):
     job_query = []
     for num in range(camera_num):
         if interface_opt == "text":
-            job_query.append(multiprocessing.Process(target=_text_interface_wrapper, args=(num, is_pi)))
+            job_query.append(threading.Thread(target=_text_interface_wrapper, args=(num, is_pi)))
         else:
-            job_query.append(multiprocessing.Process(target=_gui_interface_wrapper, args=(num, is_pi)))
+            job_query.append(threading.Thread(target=_gui_interface_wrapper, args=(num, is_pi)))
 
     for job in job_query:
         job.start()

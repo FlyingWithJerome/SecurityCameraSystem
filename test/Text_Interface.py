@@ -23,8 +23,6 @@ class TextInterface(object):
         self.__camera_num = camera_num
         self.__test_video = cv2.VideoCapture(camera_num)
 
-        # print("finish making camera")
-
         self.__event_str = None
         self.__event_changed = False
         self.__isrunning = True
@@ -83,5 +81,6 @@ class TextInterface(object):
         self.__test_video.release()
 
 if __name__ == "__main__":
-    t = TextInterface()
+    on_pi = True if sys.argv[1] == "pi" else False
+    t = TextInterface(on_pi=on_pi)
     t.run()

@@ -4,6 +4,7 @@ GUI_Interface.py
 
 import cProfile
 import gc
+import sys
 import threading
 import time
 from datetime import datetime
@@ -149,5 +150,6 @@ class GUIInterface(object):
         self.__gui_root.quit()
 
 if __name__ == "__main__":
-    i = GUIInterface()
+    on_pi = True if sys.argv[1] == "pi" else False
+    i = GUIInterface(on_pi=on_pi)
     cProfile.run("i.run()")
