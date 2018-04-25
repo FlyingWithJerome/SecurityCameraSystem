@@ -36,7 +36,7 @@ def initialize_alarm_account(username, passwd, account_type="gmail"):
 
 def _verify_account(username, passwd, account_type="gmail"):
     server, port = _get_server_port_pair(account_type)
-    mail_server = _initialize_smtp_server(server, host)
+    mail_server = _initialize_smtp_server(server, port)
 
     try:
         mail_server.login(username, passwd)

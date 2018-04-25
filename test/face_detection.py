@@ -36,7 +36,7 @@ class Detector(object):
             self.__camera = cv2.VideoCapture(camera_serial)
         else:
             self.__camera = video_handler
-        self.__writer = cv2.VideoWriter("out.avi", cv2.VideoWriter_fourcc(*video_format), 12, (1280, 720))
+        self.__writer = cv2.VideoWriter("out.avi", cv2.cv.CV_FOURCC(*video_format), 12, (1280, 720))
         self.__method = method
         self.__output_buffer  = None
         self.__size_buffer    = []
