@@ -7,6 +7,8 @@ try:
 except ImportError:
     import queue
 
+from datetime import datetime
+
 import numpy as np
 import cv2
 # import video_capture
@@ -146,11 +148,16 @@ class Detector(object):
 
     
     def __output_media(self, frame, option="lo-res pic"):
+
+        time_now = "_".join(str(datetime.now())[:-7].split())
         
         if option == "lo-res pic":
-            cv2.imwrite("low resolution picture.jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+            filename = "low_resolution_pic_{}.jpg".format(time_now)
+            cv2.imwrite(filename, frame, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+
         elif option == "hi-res pic":
-            cv2.imwrite("hi resolution picture.jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+            filename = "hi_resolution_pic_{}.jpg".format(time_now)
+            cv2.imwrite(filename, frame, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
 
         elif option == "video":
             self.__writer.write(frame)

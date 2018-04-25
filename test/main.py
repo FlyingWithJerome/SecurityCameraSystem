@@ -36,7 +36,7 @@ def parse_arguments():
     [camera_num]  = args["number of cameras"]
     detect_method = detection_map[args["detection method"]]
     event_logic   = args["event logic"]
-    is_onpi       = True if args["running on Pi"] == "pi" else False
+    is_onpi       = True if args["running on Pi"].lower() == "pi" else False
 
     return [
         {
@@ -58,6 +58,7 @@ def _text_interface_wrapper(camera_serial, **arguments):
     instance.run()
 
 def _gui_interface_wrapper(camera_serial, **arguments):
+    signal.signal(signal.SIGINT, _exit_handler)
     instance = GUIInterface(camera_num=camera_serial, **arguments)
     instance.run()
 
@@ -75,7 +76,7 @@ def launch_camera_instances(list_of_args, interface_opt="text"):
 
 
 if __name__ == "__main__":
-    
+
     args = parse_arguments()
 
     try:
@@ -84,4 +85,4 @@ if __name__ == "__main__":
         print("Please note that some OpenCV libraries and tkinter require to be executed in main process/thread")
         pass
     finally:
-        launch_camera_instances(args, interface_opt="text")
+        launch_camera_instances(args, interface_opt="gui")
