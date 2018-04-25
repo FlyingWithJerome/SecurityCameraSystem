@@ -15,7 +15,7 @@ import cv2
 
 class Detector(object):
 
-    def __init__(self, camera_serial=0, frame_skip=7, method="Haar_upperbody", video_format="MJPG", video_handler=None, on_pi=False):
+    def __init__(self, camera_serial=0, frame_skip=7, method="Haar_upperbody", event_logic="threshold", video_format="MJPG", video_handler=None, on_pi=False):
 
         # print("detector initializing")
 
@@ -44,11 +44,13 @@ class Detector(object):
         self.__method = method
         self.__output_buffer  = None
         self.__size_buffer    = []
-        # self.__queue_in       = queue_capture
-        # self.__queue_out      = queue_output
+        
+        if event_logic == "threshold":
+            self.__check_event_logic = self.__check_event_logic_threshold
+        else:
+            self.__check_event_logic = self.__check_event_logic_increase
 
         self.__event_level    = 1
-        # self.__frame_step     = 5
         self.__frame_skip     = frame_skip
 
     def main_loop(self):
@@ -154,7 +156,27 @@ class Detector(object):
             self.__writer.write(frame)
 
 
-    def __check_event_logic(self):
+    def __check_event_logic_threshold(self):
+        print self.__size_buffer
+
+        if self.__event_level > 1:
+            if 500 > self.__size_buffer[-1] >= 300:
+                self.__event_level = 3
+                return
+
+            elif self.__size_buffer[-1] >= 500:
+                self.__event_level = 4
+                return
+        else:
+            if self.__size_buffer[-1] > 0:
+                self.__event_level = 2
+                return
+                
+        if all(i==0 for i in self.__size_buffer[-5:]):
+            self.__event_level = 1
+
+
+    def __check_event_logic_increase(self):
         '''
         change the event level based on the
         logic designed

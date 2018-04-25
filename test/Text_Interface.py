@@ -6,6 +6,7 @@ This module represents the text interface for the camera system
 
 import cProfile
 import gc
+import sys
 import threading
 import time
 from datetime import datetime
@@ -30,6 +31,7 @@ class TextInterface(object):
         self.__image = None
 
         self.__detector = Detector(method=detect_method, video_handler=self.__test_video, on_pi=on_pi)
+        self.__email_send_time = None
         print("Initialization Finished")
 
 
@@ -63,12 +65,16 @@ class TextInterface(object):
 
                 self.__get_event_level()
                 if self.__event_level == 3:
-                    time_now = str(datetime.now())[:-7]
-                    print("[Camera {}] <{}> Send alarms to the receipents...".format(
-                        self.__camera_num, time_now
-                    ))
-                    alarm_sender = threading.Thread(target=alarm.send_alarm)
-                    alarm_sender.start()
+                    send_time = time.time()
+                    if (self.__email_send_time is None) or (send_time - self.__email_send_time > 100):
+                        alarm_executor = threading.Thread(target=alarm.send_alarm)
+                        alarm_executor.start()
+                        time_now = str(datetime.now())[:-7]
+                        print("[Camera {}] <{}> Send alarms to the receipents...".format(
+                            self.__camera_num, time_now
+                        ))
+                        self.__email_send_time = time.time()
+
                 gc.collect()
 
         except KeyboardInterrupt:

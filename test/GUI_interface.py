@@ -15,9 +15,8 @@ import Tkinter as tk
 import imutils
 import cv2
 
-
-from face_detection import Detector
 import alarm
+from face_detection import Detector
 
 class GUIInterface(object):
 
@@ -55,6 +54,7 @@ class GUIInterface(object):
         self.__detector = Detector(method=detect_method, video_handler=self.__test_video, on_pi=on_pi)
 
         self.__event_lock = threading.Lock()
+        self.__email_send_time = None
 
         self.__frame_executor = threading.Thread(target=self.__get_frame)
         self.__frame_executor.setDaemon(True)
@@ -138,9 +138,12 @@ class GUIInterface(object):
                 self.__event_lock.release()
 
                 if self.__event_level == 3:
-                    alarm = threading.Thread(target=alarm.send_alarm)
-                    alarm.start()
-                    self.__process_window.insert(tk.END, "Sent out alarm...\n")
+                    send_time = time.time()
+                    if (self.__email_send_time is None) or (send_time - self.__email_send_time > 100):
+                        alarm_executor = threading.Thread(target=alarm.send_alarm)
+                        alarm_executor.start()
+                        self.__process_window.insert(tk.END, "Sent out alarm...\n")
+                        self.__email_send_time = time.time()
 
                 self.__gui_root.update()
                 gc.collect()
