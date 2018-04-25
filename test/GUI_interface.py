@@ -20,7 +20,7 @@ import alarm
 
 class GUIInterface(object):
 
-    def __init__(self, camera_num=0):
+    def __init__(self, camera_num=0, detect_method="Haar_upperbody", on_pi=False):
         self.__gui_root = tk.Tk()
 
         self.__btn_frame = tk.Frame()
@@ -51,7 +51,7 @@ class GUIInterface(object):
         self.__event_str = None
         self.__event_changed = False
 
-        self.__detector = Detector(method="Haar_upperbody", video_handler=self.__test_video, on_pi=False)
+        self.__detector = Detector(method=detect_method, video_handler=self.__test_video, on_pi=on_pi)
 
         self.__event_lock = threading.Lock()
 
@@ -149,5 +149,5 @@ class GUIInterface(object):
         self.__gui_root.quit()
 
 if __name__ == "__main__":
-    i = Interface()
+    i = GUIInterface()
     cProfile.run("i.run()")

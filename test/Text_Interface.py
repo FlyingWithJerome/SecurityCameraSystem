@@ -17,7 +17,7 @@ from face_detection import Detector
 
 class TextInterface(object):
 
-    def __init__(self, camera_num=0):
+    def __init__(self, camera_num=0, detect_method="Haar_upperbody", on_pi=False):
 
         print("Initializing Camera {}...".format(camera_num))
         self.__camera_num = camera_num
@@ -31,7 +31,7 @@ class TextInterface(object):
         self.__event_level = 1
         self.__image = None
 
-        self.__detector = Detector(method="Haar_upperbody", video_handler=self.__test_video, on_pi=False)
+        self.__detector = Detector(method=detect_method, video_handler=self.__test_video, on_pi=on_pi)
         print("Initialization Finished")
 
 
