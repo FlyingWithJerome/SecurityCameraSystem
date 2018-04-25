@@ -89,10 +89,6 @@ class Interface(object):
                 else:
                     self.__image = self.__detector.get_frame_single(skip=True)
                 order += 1
-                # ret, frame = self.__test_video.read()
-                # if ret:
-                #     self.__image = frame
-                # time.sleep(2)
 
     def __get_event_level(self):
         while(self.__isrunning):
@@ -141,7 +137,8 @@ class Interface(object):
                 self.__event_lock.release()
 
                 if self.__event_level == 3:
-                    alarm.send_alarm()
+                    alarm = threading.Thread(target=alarm.send_alarm)
+                    alarm.start()
                     self.__process_window.insert(tk.END, "Sent out alarm...\n")
 
                 self.__gui_root.update()
