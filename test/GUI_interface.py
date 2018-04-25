@@ -18,7 +18,7 @@ import cv2
 from face_detection import Detector
 import alarm
 
-class Interface(object):
+class GUIInterface(object):
 
     def __init__(self, camera_num=0):
         self.__gui_root = tk.Tk()
