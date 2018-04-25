@@ -24,6 +24,10 @@ class TextInterface(object):
         self.__camera_num = camera_num
         self.__test_video = cv2.VideoCapture(camera_num)
 
+        if not self.__test_video.isOpened():
+            print("Camera", camera_num, "quits")
+            exit(-1)
+
         self.__event_str = None
         self.__event_changed = False
         self.__isrunning = True
