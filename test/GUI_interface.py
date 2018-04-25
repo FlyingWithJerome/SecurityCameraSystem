@@ -3,6 +3,7 @@ GUI_Interface.py
 '''
 
 import cProfile
+import gc
 import threading
 import time
 from datetime import datetime
@@ -15,6 +16,7 @@ import cv2
 
 
 from face_detection import Detector
+import alarm
 
 class Interface(object):
 
@@ -49,7 +51,7 @@ class Interface(object):
         self.__event_str = None
         self.__event_changed = False
 
-        self.__detector = Detector(method="Haar_frontalface", video_handler=self.__test_video)
+        self.__detector = Detector(method="Haar_upperbody", video_handler=self.__test_video)
 
         self.__event_lock = threading.Lock()
 
@@ -69,11 +71,11 @@ class Interface(object):
         self.__isrunning = False
 
     def __destroy(self):
+        self.__destroyed = True
+        self.__isrunning = False
+
         del self.__detector
         self.__test_video.release()
-        self.__destroyed = True
-
-        self.__isrunning = False
         self.__gui_root.destroy()
         self.__gui_root.quit()
 
@@ -86,7 +88,6 @@ class Interface(object):
                     self.__image = self.__detector.get_frame_single(skip=False)
                 else:
                     self.__image = self.__detector.get_frame_single(skip=True)
-
                 order += 1
                 # ret, frame = self.__test_video.read()
                 # if ret:
@@ -139,7 +140,12 @@ class Interface(object):
                     self.__event_changed = False
                 self.__event_lock.release()
 
+                if self.__event_level == 3:
+                    alarm.send_alarm()
+                    self.__process_window.insert(tk.END, "Sent out alarm...\n")
+
                 self.__gui_root.update()
+                gc.collect()
 
     def __del__(self):
         self.__test_video.release()
