@@ -11,6 +11,7 @@ from GUI_Interface import GUIInterface
 from Text_Interface import TextInterface
 
 def _text_interface_wrapper(camera_serial, is_pi):
+    print("wrapper:", is_pi)
     instance = TextInterface(camera_num=camera_serial, on_pi=is_pi)
     instance.run()
 

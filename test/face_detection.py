@@ -37,6 +37,7 @@ class Detector(object):
         else:
             self.__camera = video_handler
 
+        print("detector:", on_pi)
         if on_pi:
             self.__writer = cv2.VideoWriter("out.avi", cv2.cv.CV_FOURCC(*video_format), 12, (1280, 720))
         else:
