@@ -19,6 +19,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Security Camera Parser')
 
     parser.add_argument('number of cameras', type=int, nargs=1, default=1, help='number of cameras connected')
+    parser.add_argument('launch mode', type=str, nargs="?", default="text", help='use GUI or text interface')
     parser.add_argument('detection method', type=str, nargs='?', default="haar_face", help="methods of classifier")
     parser.add_argument('event logic', type=str, nargs='?', default="threshold", help="how the system intensifies the alarms")
     parser.add_argument('running on Pi', type=str, nargs='?', default="nopi", help="whether it is running on Pi")
@@ -38,7 +39,8 @@ def parse_arguments():
     event_logic   = args["event logic"]
     is_onpi       = args["running on Pi"].lower() == "pi"
 
-    return [
+
+    return args["launch mode"], [
         {
             "camera_serial" : i,
             "detect_method" : detect_method,
@@ -77,7 +79,7 @@ def launch_camera_instances(list_of_args, interface_opt="text"):
 
 if __name__ == "__main__":
 
-    args = parse_arguments()
+    launch_mode, args = parse_arguments()
 
     try:
         multiprocessing.set_start_method("spawn")
@@ -85,4 +87,5 @@ if __name__ == "__main__":
         print("Please note that some OpenCV libraries and tkinter require to be executed in main process/thread")
         pass
     finally:
-        launch_camera_instances(args, interface_opt="gui")
+        
+        launch_camera_instances(args, interface_opt=launch_mode)
