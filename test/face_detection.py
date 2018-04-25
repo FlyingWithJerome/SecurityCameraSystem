@@ -51,7 +51,7 @@ class Detector(object):
             self.__check_event_logic = self.__check_event_logic_increase
 
         self.__event_level    = 1
-        self.__frame_skip     = frame_skip
+
 
     def main_loop(self):
         order = 0
@@ -171,7 +171,7 @@ class Detector(object):
             if self.__size_buffer[-1] > 0:
                 self.__event_level = 2
                 return
-                
+
         if all(i==0 for i in self.__size_buffer[-5:]):
             self.__event_level = 1
 

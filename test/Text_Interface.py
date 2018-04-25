@@ -57,7 +57,7 @@ class TextInterface(object):
         try:
             while(self.__isrunning):
                 if self.__test_video.isOpened():
-                    if order % 12 == 0:
+                    if order % 6 == 0:
                         self.__image = self.__detector.get_frame_single(skip=False)
                     else:
                         self.__image = self.__detector.get_frame_single(skip=True)
