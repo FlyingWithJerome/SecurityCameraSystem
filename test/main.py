@@ -26,9 +26,13 @@ def launch_camera_instances(camera_num=0, interface_opt="text", is_pi=False):
     job_query = []
     for num in range(0, camera_num, 1):
         if interface_opt == "text":
-            job_query.append(gevent.spawn(_text_interface_wrapper, num, is_pi))
+            job_query.append(multiprocessing.Process(target=_text_interface_wrapper, args=(num, is_pi)))
+            # job_query.append(gevent.spawn(_text_interface_wrapper, num, is_pi))
 
-    gevent.joinall(job_query)
+    for job in job_query:
+        job.start()
+        
+    # gevent.joinall(job_query)
 
 
 if __name__ == "__main__":
