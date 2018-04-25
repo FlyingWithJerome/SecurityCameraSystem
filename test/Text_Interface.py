@@ -18,7 +18,7 @@ from face_detection import Detector
 
 class TextInterface(object):
 
-    def __init__(self, camera_num=0, detect_method="Haar_upperbody", on_pi=False):
+    def __init__(self, camera_num=0, detect_method="Haar_frontalface", on_pi=False):
 
         print("Initializing Camera {}...".format(camera_num))
         self.__camera_num = camera_num
@@ -57,7 +57,7 @@ class TextInterface(object):
         try:
             while(self.__isrunning):
                 if self.__test_video.isOpened():
-                    if order % 6 == 0:
+                    if order % 2 == 0:
                         self.__image = self.__detector.get_frame_single(skip=False)
                     else:
                         self.__image = self.__detector.get_frame_single(skip=True)

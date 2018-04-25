@@ -20,7 +20,7 @@ from face_detection import Detector
 
 class GUIInterface(object):
 
-    def __init__(self, camera_num=0, detect_method="Haar_upperbody", on_pi=False):
+    def __init__(self, camera_num=0, detect_method="Haar_frontalface", on_pi=False):
         self.__gui_root = tk.Tk()
 
         self.__btn_frame = tk.Frame()
