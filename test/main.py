@@ -36,5 +36,5 @@ def launch_camera_instances(camera_num=0, interface_opt="text", is_pi=False):
 if __name__ == "__main__":
     # _text_interface_wrapper(0)
     camera_num = int(sys.argv[1])
-    is_pi = True if sys.argv[2] == 1 else 0
+    is_pi = True if sys.argv[2] == 1 else False
     launch_camera_instances(camera_num, "text", is_pi)
