@@ -10,8 +10,6 @@ import multiprocessing
 import signal
 import sys
 
-# import gevent
-
 from GUI_Interface import GUIInterface
 from Text_Interface import TextInterface
 
@@ -22,7 +20,7 @@ def parse_arguments():
     parser.add_argument('launch mode', type=str, nargs="?", default="text", help='use GUI or text interface')
     parser.add_argument('detection method', type=str, nargs='?', default="haar_face", help="methods of classifier")
     parser.add_argument('event logic', type=str, nargs='?', default="threshold", help="how the system intensifies the alarms")
-    parser.add_argument('running on Pi', type=str, nargs='?', default="nopi", help="whether it is running on Pi")
+    parser.add_argument('running on Pi', type=str, nargs='?', default="nopi", help="whether it is running on Raspberry Pi")
 
     args = parser.parse_args()
     args = vars(args)
@@ -64,18 +62,25 @@ def _gui_interface_wrapper(camera_serial, **arguments):
     instance = GUIInterface(camera_num=camera_serial, **arguments)
     instance.run()
 
-def launch_camera_instances(list_of_args, interface_opt="text"):
+def launch_camera_instances(list_of_args, interface_opt="text", launch_with_single_process=False):
 
     job_query = []
-    for arg in list_of_args:
+    if not launch_with_single_process:
+        for arg in list_of_args:
+            if interface_opt == "text":
+                job_query.append(multiprocessing.Process(target=_text_interface_wrapper, kwargs=arg))
+            else:
+                job_query.append(multiprocessing.Process(target=_gui_interface_wrapper, kwargs=arg))
+            
+        for job in job_query:
+            job.start()
+
+    else:
         if interface_opt == "text":
-            job_query.append(multiprocessing.Process(target=_text_interface_wrapper, kwargs=arg))
+            _text_interface_wrapper(**list_of_args[0])
         else:
-            job_query.append(multiprocessing.Process(target=_gui_interface_wrapper, kwargs=arg))
-
-    for job in job_query:
-        job.start()
-
+            _gui_interface_wrapper(**list_of_args[0])
+    
 
 if __name__ == "__main__":
 
@@ -83,9 +88,8 @@ if __name__ == "__main__":
 
     try:
         multiprocessing.set_start_method("spawn")
-    except:
-        print("Please note that some OpenCV libraries and tkinter require to be executed in main process/thread")
-        pass
-    finally:
-        
         launch_camera_instances(args, interface_opt=launch_mode)
+
+    except AttributeError:
+        print("Please note that some OpenCV libraries and tkinter require to be executed in main process/thread")
+        launch_camera_instances(args, interface_opt=launch_mode, launch_with_single_process=True)        
