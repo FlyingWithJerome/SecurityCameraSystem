@@ -75,6 +75,7 @@ def launch_camera_instances(list_of_args, interface_opt="text"):
 
 
 if __name__ == "__main__":
+    
     args = parse_arguments()
 
     try:

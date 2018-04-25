@@ -14,7 +14,7 @@ from datetime import datetime
 import cv2
 
 import alarm
-from face_detection import Detector
+from Face_Detection import Detector
 
 class TextInterface(object):
 
