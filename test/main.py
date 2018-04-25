@@ -8,7 +8,7 @@ import threading
 import multiprocessing
 import sys
 
-import gevent
+# import gevent
 
 from GUI_Interface import GUIInterface
 from Text_Interface import TextInterface
@@ -31,7 +31,7 @@ def launch_camera_instances(camera_num=0, interface_opt="text", is_pi=False):
 
     for job in job_query:
         job.start()
-        
+
     # gevent.joinall(job_query)
 
 
