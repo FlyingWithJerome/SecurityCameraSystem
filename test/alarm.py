@@ -6,7 +6,11 @@ This module sends an alarm to the user
 import os
 import smtplib
 
-from email.MIMEMultipart import MIMEMultipart
+try:
+    from email.MIMEMultipart import MIMEMultipart
+except ImportError:
+    from email.mime.multipart import MIMEMultipart
+    
 from email.mime.text import MIMEText
 
 def _get_server_port_pair(account_type="gmail"):

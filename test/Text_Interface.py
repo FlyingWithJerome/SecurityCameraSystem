@@ -18,7 +18,7 @@ from face_detection import Detector
 
 class TextInterface(object):
 
-    def __init__(self, camera_num=0, detect_method="Haar_frontalface", on_pi=False):
+    def __init__(self, camera_num=0, detect_method="Haar_frontalface", event_logic="threshold", on_pi=False):
 
         print("Initializing Camera {}...".format(camera_num))
         self.__camera_num = camera_num
@@ -34,7 +34,7 @@ class TextInterface(object):
         self.__event_level = 1
         self.__image = None
 
-        self.__detector = Detector(method=detect_method, video_handler=self.__test_video, on_pi=on_pi)
+        self.__detector = Detector(method=detect_method, video_handler=self.__test_video, event_logic=event_logic, on_pi=on_pi)
         self.__email_send_time = None
         print("Initialization Finished")
 
@@ -86,6 +86,7 @@ class TextInterface(object):
 
 
     def __del__(self):
+        print("properly released")
         self.__isrunning = False
         del self.__detector
         self.__test_video.release()

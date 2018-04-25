@@ -157,7 +157,7 @@ class Detector(object):
 
 
     def __check_event_logic_threshold(self):
-        print self.__size_buffer
+        print(self.__size_buffer)
 
         if self.__event_level > 1:
             if 500 > self.__size_buffer[-1] >= 300:

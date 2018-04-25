@@ -11,8 +11,10 @@ from datetime import datetime
 
 from PIL import Image
 from PIL import ImageTk
-import Tkinter as tk
-import imutils
+try:
+    import Tkinter as tk
+except ImportError:
+    import tkinter as tk
 import cv2
 
 import alarm
@@ -20,7 +22,7 @@ from face_detection import Detector
 
 class GUIInterface(object):
 
-    def __init__(self, camera_num=0, detect_method="Haar_frontalface", on_pi=False):
+    def __init__(self, camera_num=0, detect_method="Haar_frontalface", event_logic="threshold", on_pi=False):
         self.__gui_root = tk.Tk()
 
         self.__btn_frame = tk.Frame()
@@ -51,7 +53,7 @@ class GUIInterface(object):
         self.__event_str = None
         self.__event_changed = False
 
-        self.__detector = Detector(method=detect_method, video_handler=self.__test_video, on_pi=on_pi)
+        self.__detector = Detector(method=detect_method, video_handler=self.__test_video, event_logic=event_logic, on_pi=on_pi)
 
         self.__event_lock = threading.Lock()
         self.__email_send_time = None
