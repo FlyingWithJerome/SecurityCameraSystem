@@ -15,7 +15,7 @@ import cv2
 
 class Detector(object):
 
-    def __init__(self, camera_serial=0, frame_skip=7, method="Haar_upperbody", video_format="MJPG", video_handler=None):
+    def __init__(self, camera_serial=0, frame_skip=7, method="Haar_upperbody", video_format="MJPG", video_handler=None, on_pi=False):
 
         # print("detector initializing")
 
@@ -36,7 +36,11 @@ class Detector(object):
             self.__camera = cv2.VideoCapture(camera_serial)
         else:
             self.__camera = video_handler
-        self.__writer = cv2.VideoWriter("out.avi", cv2.cv.CV_FOURCC(*video_format), 12, (1280, 720))
+
+        if on_pi:
+            self.__writer = cv2.VideoWriter("out.avi", cv2.cv.CV_FOURCC(*video_format), 12, (1280, 720))
+        else:
+            self.__writer = cv2.VideoWriter("out.avi", cv2.VideoWriter_fourcc(*video_format), 12, (1280, 720))
         self.__method = method
         self.__output_buffer  = None
         self.__size_buffer    = []

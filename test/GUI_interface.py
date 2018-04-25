@@ -51,7 +51,7 @@ class Interface(object):
         self.__event_str = None
         self.__event_changed = False
 
-        self.__detector = Detector(method="Haar_upperbody", video_handler=self.__test_video)
+        self.__detector = Detector(method="Haar_upperbody", video_handler=self.__test_video, on_pi=False)
 
         self.__event_lock = threading.Lock()
 
