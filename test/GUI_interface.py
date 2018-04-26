@@ -1,7 +1,7 @@
 '''
 GUI_Interface.py
 '''
-
+import atexit
 import cProfile
 import gc
 import sys
@@ -41,6 +41,7 @@ class GUIInterface(object):
         self.__process_window.pack(side="right")
         self.__process_window.insert(tk.END, "Initializing Camera {}...\n".format(camera_num))
         self.__gui_root.wm_title("Camera {:d}".format(camera_num))
+        self.__gui_root.update()
 
         self.__panel = None
         self.__destroyed = False
@@ -66,6 +67,8 @@ class GUIInterface(object):
         self.__event_lvl_executor.setDaemon(True)
         self.__event_lvl_executor.start()
 
+        atexit.register(self.__destroy)
+
     
     def __start(self):
         self.__isrunning = True
@@ -74,13 +77,14 @@ class GUIInterface(object):
         self.__isrunning = False
 
     def __destroy(self):
-        self.__destroyed = True
-        self.__isrunning = False
+        if not self.__destroyed:
+            self.__destroyed = True
+            self.__isrunning = False
 
-        del self.__detector
-        self.__test_video.release()
-        self.__gui_root.destroy()
-        self.__gui_root.quit()
+            del self.__detector
+            self.__test_video.release()
+            self.__gui_root.destroy()
+            self.__gui_root.quit()
 
     def __get_frame(self):
 
@@ -151,6 +155,9 @@ class GUIInterface(object):
                 gc.collect()
 
     def __del__(self):
+        if not self.__destroyed:
+            self.__destroy()
+        
         self.__test_video.release()
         self.__gui_root.quit()
 
