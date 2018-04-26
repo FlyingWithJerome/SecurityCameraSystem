@@ -92,4 +92,7 @@ if __name__ == "__main__":
 
     except AttributeError:
         print("Please note that some OpenCV libraries and tkinter require to be executed in main process/thread")
-        launch_camera_instances(args, interface_opt=launch_mode, launch_with_single_process=True)        
+        if not args[0]["on_pi"]:
+            launch_camera_instances(args, interface_opt=launch_mode, launch_with_single_process=True)  
+        else:
+            launch_camera_instances(args, interface_opt=launch_mode)       
